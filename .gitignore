@@ -1,3 +1,5 @@
 frontend/__pycache__/
 multimodal_demo.code-workspace
 backend/__pycache__/
+backend/registry/__pycache__/
+backend/registry/migrations/__pycache__/
