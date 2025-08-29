@@ -3,3 +3,6 @@ multimodal_demo.code-workspace
 backend/__pycache__/
 backend/registry/__pycache__/
 backend/registry/migrations/__pycache__/
+backend/services/__pycache__/
+backend/.env
+ml/.env
