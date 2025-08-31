@@ -1,8 +1,14 @@
 import os
 from pathlib import Path
+from dotenv import load_dotenv
+
 
 BASE_DIR = Path(__file__).resolve().parent.parent
+load_dotenv(BASE_DIR / ".env")  # loads backend/.env
 
+AWS_ACCESS_KEY_ID = os.getenv("AWS_ACCESS_KEY_ID")
+AWS_SECRET_ACCESS_KEY = os.getenv("AWS_SECRET_ACCESS_KEY")
+AWS_DEFAULT_REGION = os.getenv("AWS_DEFAULT_REGION", "eu-central-1")
 SECRET_KEY = "dev-secret-key-change-me"
 DEBUG = True
 ALLOWED_HOSTS = ["127.0.0.1", "localhost"]
@@ -55,11 +61,11 @@ WSGI_APPLICATION = "registry.wsgi.application"
 DATABASES = {
   "default": {
     "ENGINE": "django.db.backends.postgresql",
-    "NAME": "my_db",
-    "USER": "postgres",
-    "PASSWORD": "QWER4321",
-    "HOST": "localhost",
-    "PORT": "5432",
+    "NAME": os.getenv("POSTGRES_NAME", "multimodal_demo"),
+    "USER": os.getenv("POSTGRES_USER", "postgres"),
+    "PASSWORD": os.getenv("POSTGRES_PASSWORD", "postgres"),
+    "HOST": os.getenv("POSTGRES_HOST", "localhost"),
+    "PORT": os.getenv("POSTGRES_PORT", "5432"),
   }
 }
 
@@ -74,3 +80,16 @@ LANGUAGE_CODE = "en-us"
 TIME_ZONE = "UTC"
 USE_I18N = True
 USE_TZ = True
+
+# ECS config (available as settings.ECS)
+ECS = {
+    "AWS_REGION": os.getenv("AWS_REGION", "eu-central-1"),
+    "CLUSTER": os.getenv("ECS_CLUSTER", ""),
+    "TASK_DEFINITION": os.getenv("ECS_TASK_DEFINITION", ""),
+    "CONTAINER_NAME": os.getenv("ECS_CONTAINER_NAME", "trainer"),
+    "SUBNETS": [s for s in os.getenv("ECS_SUBNETS", "").split(",") if s],
+    "SECURITY_GROUPS": [s for s in os.getenv("ECS_SECURITY_GROUPS", "").split(",") if s],
+    "ASSIGN_PUBLIC_IP": os.getenv("ECS_ASSIGN_PUBLIC_IP", "ENABLED"),
+    "PLATFORM_VERSION": os.getenv("ECS_PLATFORM_VERSION", "LATEST"),
+}
+S3_BUCKET = os.getenv("S3_BUCKET", "demo-bucket")
