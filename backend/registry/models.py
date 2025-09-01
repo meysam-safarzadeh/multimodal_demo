@@ -8,8 +8,6 @@ class Dataset(models.Model):
     data_s3_uri = models.URLField()           # folder/bucket prefix
     created_at = models.DateTimeField(auto_now_add=True)
 
-class DetectionResult(models.Model):
-    dataset = models.OneToOneField(Dataset, on_delete=models.CASCADE, related_name="detection")
     modalities = ArrayField(models.CharField(max_length=32), default=list, blank=True)
     feature_columns = ArrayField(models.CharField(max_length=128), default=list, blank=True)
     modality_columns = ArrayField(models.CharField(max_length=128), default=list, blank=True)
