@@ -92,4 +92,4 @@ ECS = {
     "ASSIGN_PUBLIC_IP": os.getenv("ECS_ASSIGN_PUBLIC_IP", "ENABLED"),
     "PLATFORM_VERSION": os.getenv("ECS_PLATFORM_VERSION", "LATEST"),
 }
-AWS_STORAGE_BUCKET_NAME = os.getenv("AWS_STORAGE_BUCKET_NAME", "demo-bucket")
+S3_BUCKET = os.getenv("AWS_STORAGE_BUCKET_NAME", "demo-bucket")
