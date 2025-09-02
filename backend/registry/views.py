@@ -117,6 +117,53 @@ class DatasetViewSet(viewsets.ModelViewSet):
 
         # respond immediately
         return Response(DatasetSerializer(dataset).data, status=status.HTTP_201_CREATED)
+    
+    @action(detail=True, methods=["get"], url_path="preview")
+    def preview(self, request, pk=None):
+        """
+        Returns a small preview of the dataset CSV:
+        {
+          "columns": [...],
+          "rows": [ {col: val, ...}, ... ],
+          "n": 25
+        }
+        """
+        try:
+            ds = self.get_object()
+            if not ds.csv_s3_uri:
+                return Response({"detail": "CSV not uploaded yet."}, status=202)
+
+            bucket, key = _parse_s3_uri(ds.csv_s3_uri)
+
+            # Try S3 Select first (efficient for large files)
+            try:
+                resp = s3.select_object_content(
+                    Bucket=bucket,
+                    Key=key,
+                    ExpressionType="SQL",
+                    Expression="SELECT * FROM s3object s LIMIT 25",
+                    InputSerialization={"CSV": {"FileHeaderInfo": "USE"}, "CompressionType": "NONE"},
+                    OutputSerialization={"CSV": {}},
+                )
+                csv_buf = io.StringIO()
+                for event in resp["Payload"]:
+                    if "Records" in event:
+                        csv_buf.write(event["Records"]["Payload"].decode("utf-8"))
+                csv_buf.seek(0)
+                df = pd.read_csv(csv_buf)
+            except Exception:
+                # Fallback: stream first bytes and let pandas read nrows
+                obj = s3.get_object(Bucket=bucket, Key=key)
+                # reading all body is fine for small/medium CSV; for huge, use smart chunking
+                body = obj["Body"].read(5 * 1024 * 1024)  # 5MB cap just in case
+                df = pd.read_csv(io.BytesIO(body), nrows=25)
+
+            # Convert to a lightweight JSON
+            rows = json.loads(df.head(25).to_json(orient="records"))
+            return Response({"columns": list(df.columns), "rows": rows, "n": len(rows)}, status=200)
+
+        except Exception as e:
+            return Response({"detail": f"Failed to build preview: {e}"}, status=400)
 
 
 class TrainingJobViewSet(viewsets.ModelViewSet):
