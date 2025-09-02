@@ -6,16 +6,11 @@ import time
 from utils import render_metrics
 
 
-def render_train_page(api_url: str, csv_blob: bytes, on_back, on_home):
-    st.title("⚙️ Step 2: Train Model")
+def render_config_page(api_url: str, csv_blob: bytes, on_back, on_home):
+    st.title("⚙️ Step 2: Training Configuration")
 
-    if not csv_blob:
-        st.warning("⚠️ Please upload a CSV file on the previous page.")
-        st.button("⬅️ Back", on_click=on_back)
-        return
-
-    # Call the combined endpoint only once and cache results
-    if "dataset" not in st.session_state:
+    # If they uploaded a new dataset, we need to POST /datasets/upload_and_detect
+    if not st.session_state.get("dataset"):
         with st.spinner("Uploading files and running metadata detection..."):
             try:
                 # Build multipart payload
@@ -73,11 +68,32 @@ def render_train_page(api_url: str, csv_blob: bytes, on_back, on_home):
 
     # --- CSV Preview ---
     st.subheader("📄 CSV Preview")
-    try:
-        df_preview = pd.read_csv(io.BytesIO(csv_blob), nrows=25)
-        st.dataframe(df_preview, width="stretch")
-    except Exception:
-        st.info("Could not render CSV preview.")
+    # Case 1: local CSV just uploaded on page 1
+    if st.session_state.get("csv_blob"):
+        try:
+            df_preview = pd.read_csv(io.BytesIO(st.session_state["csv_blob"]), nrows=50)
+            st.dataframe(df_preview, width="stretch")
+        except Exception as e:
+            st.warning(f"Could not render local CSV preview: {e}")
+
+    # Case 2: existing dataset selected (no local CSV)
+    elif st.session_state.get("dataset_id"):
+        rid = st.session_state["dataset_id"]
+        with st.spinner("Fetching preview..."):
+            try:
+                resp = requests.get(f"{api_url}/datasets/{rid}/preview/", timeout=60)
+                if resp.status_code == 202:
+                    st.info("CSV is still uploading. Preview will be available shortly.")
+                else:
+                    resp.raise_for_status()
+                    prev = resp.json()  # {"columns": [...], "rows": [...], "n": 50}
+                    df_preview = pd.DataFrame(prev.get("rows", []))
+                    if df_preview.empty:
+                        st.info("No preview available yet.")
+                    else:
+                        st.dataframe(df_preview, width="stretch")
+            except Exception as e:
+                st.warning(f"Could not load preview from API: {e}")
 
     # --- Metadata Summary ---
     st.subheader("🔍 Detected Metadata")
@@ -126,32 +142,9 @@ def render_train_page(api_url: str, csv_blob: bytes, on_back, on_home):
         target_col = st.selectbox("Select target column", options=available_targets, index=idx)
         st.session_state["target_col"] = target_col
 
-    # --- Train Button: call /train ---
-    disabled = target_col is None
-    if st.button("Start Training", disabled=disabled):
-        with st.spinner("Training (simulated)…"):
-            payload = {
-                "feature_columns": feature_cols,
-                "modality_columns": modality_cols,
-                "target_col": target_col,
-                "job_name": "local_demo_job",
-            }
-            try:
-                r = requests.post(f"{api_url}/train", json=payload, timeout=300)
-                r.raise_for_status()
-                out = r.json()
-                st.success("✅ Training complete!")
-                st.write("**Metrics:**")
-                metrics = out.get("metrics", {})
-                render_metrics(metrics)
-                st.write(f"**Model artifact:** {out.get('model_artifact_path')}")
-                st.download_button("Download Model", data=b"dummy-model", file_name="model.pt")
-            except Exception as e:
-                st.error(f"Training failed: {e}")
-
     # Navigation
     col1, col2 = st.columns(2)
     with col1:
-        st.button("⬅️ Back", on_click=on_back)
+        st.button("⬅️ Back", on_click=on_back, use_container_width=True)
     with col2:
-        st.button("🏠 Home", on_click=on_home)
+        st.button("🏠 Home", on_click=on_home, use_container_width=True)
