@@ -1,12 +1,13 @@
 import os
 from pathlib import Path
+import re
 import tempfile
 import threading
+from urllib.parse import urlparse
 import boto3
 from rest_framework import viewsets, status
 from rest_framework.response import Response
 from rest_framework.decorators import action
-
 from metadata_detector import MetadataDetector
 from registry import settings
 from .models import Dataset, TrainingJob, Metric, Artifact
@@ -15,7 +16,10 @@ from .serializers import (
     MetricSerializer, ArtifactSerializer
 )
 from services.training_services import start_training_background
-
+import pandas as pd
+import io
+import json
+from utils import _parse_s3_uri
 
 
 s3 = boto3.client("s3")
@@ -75,7 +79,7 @@ class DatasetViewSet(viewsets.ModelViewSet):
 
         # --- background uploader uses persisted temp paths ---
         def upload_to_s3(csv_tmp_path: str, saved_files: list, dataset_id: int):
-            bucket = settings.AWS_STORAGE_BUCKET_NAME  # set this in settings/.env
+            bucket = settings.S3_BUCKET  # set this in settings/.env
             try:
                 # CSV
                 csv_key = f"datasets/{dataset_id}/metadata.csv"
