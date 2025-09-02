@@ -70,8 +70,6 @@ def render_upload_page(api_base: str, go):
         }
 
         st.success(f"Selected dataset #{st.session_state.dataset_id}: {selected.get('name')}")
-        st.write(f"CSV: {selected.get('csv_s3_uri') or '—'}")
-        st.write(f"Data: {selected.get('data_s3_uri') or '—'}")
 
         c1, c2 = st.columns(2)
         with c1:
