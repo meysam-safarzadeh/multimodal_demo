@@ -34,6 +34,12 @@ class TrainingJob(models.Model):
     started_at = models.DateTimeField(null=True, blank=True)
     ended_at = models.DateTimeField(null=True, blank=True)
     ecs_task_arn = models.CharField(max_length=512, null=True, blank=True)
+    epochs = models.IntegerField(default=5, validators=[MinValueValidator(1)])
+    learning_rate = models.FloatField(default=0.001, validators=[MinValueValidator(1e-6), MaxValueValidator(1.0)])
+    train_pct = models.IntegerField(default=80, validators=[MinValueValidator(1), MaxValueValidator(99)])
+    test_pct = models.IntegerField(default=20, validators=[MinValueValidator(1), MaxValueValidator(99)])
+    created_at = models.DateTimeField(auto_now_add=True)
+    
 
 class Metric(models.Model):
     job = models.ForeignKey(TrainingJob, on_delete=models.CASCADE, related_name="metrics")
