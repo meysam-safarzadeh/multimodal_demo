@@ -19,7 +19,7 @@ from services.training_services import start_training_background
 import pandas as pd
 import io
 import json
-from utils import _parse_s3_uri
+from registry.utils import _parse_s3_uri
 
 
 s3 = boto3.client("s3")
