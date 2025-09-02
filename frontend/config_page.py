@@ -142,6 +142,62 @@ def render_config_page(api_url: str, csv_blob: bytes, on_back, on_home):
         target_col = st.selectbox("Select target column", options=available_targets, index=idx)
         st.session_state["target_col"] = target_col
 
+    # ------- Training configuration (put this BEFORE the nav buttons) -------
+    # Defaults
+    st.session_state.setdefault("train_pct", 80)
+    st.session_state.setdefault("test_pct", 20)
+    st.session_state.setdefault("epochs", 4)
+    st.session_state.setdefault("learning_rate", 1e-4)
+    st.session_state.setdefault("_split_sync_guard", False)
+
+    def _sync_from_train():
+        if st.session_state._split_sync_guard:
+            return
+        st.session_state._split_sync_guard = True
+        st.session_state.train_pct = max(1, min(99, int(st.session_state.train_pct)))
+        st.session_state.test_pct = 100 - st.session_state.train_pct
+        st.session_state._split_sync_guard = False
+
+    def _sync_from_test():
+        if st.session_state._split_sync_guard:
+            return
+        st.session_state._split_sync_guard = True
+        st.session_state.test_pct = max(1, min(99, int(st.session_state.test_pct)))
+        st.session_state.train_pct = 100 - st.session_state.test_pct
+        st.session_state._split_sync_guard = False
+
+    c1, c2, c3, c4 = st.columns(4)
+    with c1:
+        st.number_input(
+            "Train %",
+            min_value=1, max_value=99, step=1,
+            key="train_pct",
+            on_change=_sync_from_train
+        )
+
+    with c2:
+        st.number_input(
+            "Test %",
+            min_value=1, max_value=99, step=1,
+            key="test_pct",
+            on_change=_sync_from_test
+        )
+
+    with c3:
+        st.number_input(
+            "Epochs",
+            min_value=1, max_value=1000, step=1,
+            key="epochs"
+        )
+
+    with c4:
+        st.number_input(
+            "Learning rate",
+            min_value=1e-6, max_value=1.0, step=1e-5,
+            format="%.6f",
+            key="learning_rate"
+        )
+
     # Navigation
     col1, col2 = st.columns(2)
     with col1:
