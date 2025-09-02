@@ -1,6 +1,8 @@
 import streamlit as st
 from upload_page import render_upload_page
 from config_page import render_config_page
+from train_page import render_train_results_page
+
 
 st.set_page_config(page_title="Multimodal Trainer", page_icon="🤖", layout="centered")
 
@@ -36,3 +38,8 @@ elif st.session_state.page == "Training Configuration":
         on_back=lambda: go("Dataset Selection"),
         on_home=lambda: go("Welcome"),
     )
+
+# --- PAGE 3: Train & Results ---
+elif st.session_state.page == "Train & Results":
+    render_train_results_page(API_URL, on_back=lambda: go("Training Configuration"), on_home=lambda: go("Welcome"))
+
