@@ -24,12 +24,12 @@ if st.session_state.page == "Welcome":
     st.write("This wizard will take you from data upload to training configuration.")
     st.button("🚀 Start", on_click=lambda: go("Dataset Selection"))
 
-# --- PAGE 1: Upload Data ---
+# --- PAGE 1: Dataset Selection ---
 elif st.session_state.page == "Dataset Selection":
     render_upload_page(API_URL, go)
 
-# --- PAGE 2: Train Model ---
-elif st.session_state.page == "Train Model":
+# --- PAGE 2: Training Configuration ---
+elif st.session_state.page == "Training Configuration":
     render_config_page(
         api_url=API_URL,
         csv_blob=st.session_state.csv_blob,

@@ -77,7 +77,7 @@ def render_upload_page(api_base: str, go):
         with c1:
             st.button("⬅️ Back", on_click=lambda: go("Welcome"), use_container_width=True)
         with c2:
-            st.button("➡️ Next", on_click=lambda: go("Train Model"), use_container_width=True)
+            st.button("➡️ Next", on_click=lambda: go("Training Configuration"), use_container_width=True)
         return
 
     # upload-new branch
@@ -110,4 +110,4 @@ def render_upload_page(api_base: str, go):
         st.button("⬅️ Back", on_click=lambda: go("Welcome"), use_container_width=True)
     with c2:
         ready = bool(st.session_state.csv_blob) and st.session_state.folder_files_count > 0
-        st.button("➡️ Next", disabled=not ready, on_click=lambda: go("Train Model"), use_container_width=True)
+        st.button("➡️ Next", disabled=not ready, on_click=lambda: go("Training Configuration"), use_container_width=True)
