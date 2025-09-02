@@ -7,7 +7,7 @@ from registry.views import (
 
 router = DefaultRouter()
 router.register(r"datasets", DatasetViewSet)
-router.register(r"jobs", TrainingJobViewSet)
+router.register(r"training_jobs", TrainingJobViewSet)
 router.register(r"metrics", MetricViewSet)
 router.register(r"artifacts", ArtifactViewSet)
 
