@@ -3,7 +3,7 @@ import streamlit as st
 import pandas as pd
 import requests
 import time
-from utils import render_metrics
+from utils import create_training_job
 
 
 def render_config_page(api_url: str, csv_blob: bytes, on_back, on_home):
@@ -198,9 +198,20 @@ def render_config_page(api_url: str, csv_blob: bytes, on_back, on_home):
             key="learning_rate"
         )
 
-    # Navigation
+    # Navigation buttons
     col1, col2 = st.columns(2)
     with col1:
         st.button("⬅️ Back", on_click=on_back, use_container_width=True)
+
     with col2:
-        st.button("🏠 Home", on_click=on_home, use_container_width=True)
+        def _create_and_go():
+            try:
+                job_id = create_training_job(api_url)
+                st.session_state.training_job_id = job_id
+                st.success(f"Training job #{job_id} created.")
+                st.session_state.page = "Train & Results"   # go to Page 3
+            except Exception as e:
+                st.error(f"Failed to create training job: {e}")
+
+        st.button("➡️ Next (create job)", on_click=_create_and_go, use_container_width=True)
+
