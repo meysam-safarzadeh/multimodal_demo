@@ -2,13 +2,12 @@ from django.urls import path, include
 from django.contrib import admin
 from rest_framework.routers import DefaultRouter
 from registry.views import (
-    DatasetViewSet, TrainingJobViewSet, MetricViewSet, ArtifactViewSet
+    DatasetViewSet, TrainingJobViewSet, ArtifactViewSet
 )
 
 router = DefaultRouter()
 router.register(r"datasets", DatasetViewSet)
 router.register(r"training_jobs", TrainingJobViewSet)
-router.register(r"metrics", MetricViewSet)
 router.register(r"artifacts", ArtifactViewSet)
 
 urlpatterns = [

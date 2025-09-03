@@ -5,7 +5,7 @@ from typing import Optional
 from django.utils import timezone
 from django.db import transaction
 from django.conf import settings
-from registry.models import TrainingJob, Metric, Artifact
+from registry.models import TrainingJob, Artifact, TrainingMetrics
 
 
 def start_training_background(job_id: int) -> None:
@@ -29,8 +29,18 @@ def _run_training(job_id: int) -> None:
             _local_dummy_training(job_id)
 
         # write some dummy results (replace with real callback/output parsing later)
-        Metric.objects.create(job_id=job_id, key="accuracy", value_num=0.92)
-        Metric.objects.create(job_id=job_id, key="loss", value_num=0.13)
+        TrainingMetrics.objects.update_or_create(
+            job_id=job_id,
+            defaults={
+                "accuracy": 0.95,
+                "loss": 0.1,
+                "val_accuracy": 0.92,
+                "val_loss": 0.15,
+                "logs": {"epoch_1": {"accuracy": 0.8, "loss": 0.5},
+                         "epoch_2": {"accuracy": 0.9, "loss": 0.2},
+                         "epoch_3": {"accuracy": 0.95, "loss": 0.1}},
+            },
+        )
         Artifact.objects.create(job_id=job_id, kind="model",
                                 s3_uri=f"s3://{settings.S3_BUCKET}/models/job-{job_id}.pt")
 

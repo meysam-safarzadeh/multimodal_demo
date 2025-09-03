@@ -1,5 +1,5 @@
 from django.contrib import admin
-from .models import Dataset, TrainingJob, Metric, Artifact
+from .models import Dataset, TrainingJob, Artifact, TrainingMetrics
 
 @admin.register(Dataset)
 class DatasetAdmin(admin.ModelAdmin):
@@ -15,9 +15,9 @@ class TrainingJobAdmin(admin.ModelAdmin):
     list_display = ("id", "dataset", "job_name", "status", "started_at", "ended_at")
     list_filter = ("status",)
 
-@admin.register(Metric)
-class MetricAdmin(admin.ModelAdmin):
-    list_display = ("id", "job", "key", "value_num", "value_text")
+@admin.register(TrainingMetrics)
+class TrainingMetricsAdmin(admin.ModelAdmin):
+    list_display = ("id", "job", "accuracy", "loss", "val_accuracy", "val_loss", "logs", "created_at", "updated_at")
 
 @admin.register(Artifact)
 class ArtifactAdmin(admin.ModelAdmin):

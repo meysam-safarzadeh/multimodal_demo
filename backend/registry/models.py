@@ -41,11 +41,27 @@ class TrainingJob(models.Model):
     created_at = models.DateTimeField(auto_now_add=True)
     
 
-class Metric(models.Model):
-    job = models.ForeignKey(TrainingJob, on_delete=models.CASCADE, related_name="metrics")
-    key = models.CharField(max_length=100)
-    value_num = models.FloatField(null=True, blank=True)   # numeric metrics
-    value_text = models.CharField(max_length=500, null=True, blank=True)  # misc metrics
+class TrainingMetrics(models.Model):
+    job = models.OneToOneField(
+        TrainingJob, on_delete=models.CASCADE, related_name="metrics"
+    )
+    # primary metrics
+    accuracy = models.FloatField(null=True, blank=True)
+    loss = models.FloatField(null=True, blank=True)
+    val_accuracy = models.FloatField(null=True, blank=True)
+    val_loss = models.FloatField(null=True, blank=True)
+    # free-form logs, intermediate stats, curve points, etc.
+    logs = models.JSONField(default=dict, blank=True)
+
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        verbose_name = "Training Metrics"
+        verbose_name_plural = "Training Metrics"
+
+    def __str__(self):
+        return f"Metrics(job={self.job_id})"
 
 class Artifact(models.Model):
     job = models.ForeignKey(TrainingJob, on_delete=models.CASCADE, related_name="artifacts")

@@ -10,10 +10,10 @@ from rest_framework.response import Response
 from rest_framework.decorators import action
 from metadata_detector import MetadataDetector
 from registry import settings
-from .models import Dataset, TrainingJob, Metric, Artifact
+from .models import Dataset, TrainingJob, Artifact, TrainingMetrics
 from .serializers import (
     DatasetSerializer, TrainingJobSerializer,
-    MetricSerializer, ArtifactSerializer
+    TrainingMetricsSerializer, ArtifactSerializer
 )
 from services.training_services import start_training_background
 import pandas as pd
@@ -183,11 +183,25 @@ class TrainingJobViewSet(viewsets.ModelViewSet):
 
         start_training_background(job.id)
         return Response({"message": "Training started", "job_id": job.id}, status=status.HTTP_202_ACCEPTED)
+    
+    @action(detail=True, methods=["get", "patch"], url_path="metrics")
+    def metrics(self, request, pk=None):
+        job = self.get_object()
+        try:
+            tm = job.metrics
+        except TrainingMetrics.DoesNotExist:
+            # create empty row lazily if you like
+            tm = TrainingMetrics.objects.create(job=job)
 
+        if request.method.lower() == "get":
+            return Response(TrainingMetricsSerializer(tm).data)
 
-class MetricViewSet(viewsets.ModelViewSet):
-    queryset = Metric.objects.all()
-    serializer_class = MetricSerializer
+        # PATCH allows partial updates (e.g., streaming logs)
+        ser = TrainingMetricsSerializer(tm, data=request.data, partial=True)
+        ser.is_valid(raise_exception=True)
+        ser.save()
+        return Response(ser.data, status=status.HTTP_200_OK)
+
 
 class ArtifactViewSet(viewsets.ModelViewSet):
     queryset = Artifact.objects.all()
