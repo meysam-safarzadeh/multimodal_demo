@@ -36,9 +36,9 @@ def _run_training(job_id: int) -> None:
                 "loss": 0.1,
                 "val_accuracy": 0.92,
                 "val_loss": 0.15,
-                "logs": {"epoch_1": {"accuracy": 0.8, "loss": 0.5},
-                         "epoch_2": {"accuracy": 0.9, "loss": 0.2},
-                         "epoch_3": {"accuracy": 0.95, "loss": 0.1}},
+                "logs": [{"epoch": 1, "accuracy": 0.8, "loss": 0.5, "val_accuracy": 0.75, "val_loss": 0.55},
+                         {"epoch": 2, "accuracy": 0.9, "loss": 0.2, "val_accuracy": 0.85, "val_loss": 0.25},
+                         {"epoch": 3, "accuracy": 0.95, "loss": 0.1, "val_accuracy": 0.9, "val_loss": 0.15}],
             },
         )
         Artifact.objects.create(job_id=job_id, kind="model",

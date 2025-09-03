@@ -51,3 +51,91 @@ def create_training_job(api_url: str) -> int:
     job = r.json()
     return job["id"]
 
+
+def render_training_curves(metrics: dict):
+    """
+    Render accuracy and loss curves from metrics['logs'] if present.
+    Supports several shapes:
+      logs = {"curve": [ {epoch, acc, val_acc, loss, val_loss}, ... ]}
+      logs = {"history": {"epoch":[...], "acc":[...], "val_acc":[...], ...}}
+      logs = [ {epoch, ...}, ... ]
+      logs = {"acc":[...], "val_acc":[...], ...}
+    """
+    logs = (metrics or {}).get("logs")
+    if not logs:
+        st.caption("No training logs available.")
+        return
+
+    df = None
+
+    # Case A: {"curve": [ {...}, {...} ]}
+    if isinstance(logs, dict) and isinstance(logs.get("curve"), list):
+        df = pd.DataFrame(logs["curve"])
+
+    # Case B: {"history": {"acc":[...], ...}}
+    elif isinstance(logs, dict) and isinstance(logs.get("history"), dict):
+        hist = logs["history"]
+        # figure out length
+        lens = [len(v) for v in hist.values() if isinstance(v, list)]
+        if lens:
+            L = max(lens)
+            epochs = hist.get("epoch") or list(range(1, L + 1))
+            df = pd.DataFrame({"epoch": epochs})
+            for k, v in hist.items():
+                if k == "epoch" or not isinstance(v, list):
+                    continue
+                df[k] = v[: len(df)]
+
+    # Case C: list of dicts
+    elif isinstance(logs, list):
+        df = pd.DataFrame(logs)
+
+    # Case D: dict of lists
+    elif isinstance(logs, dict) and all(isinstance(v, list) for v in logs.values()):
+        lens = [len(v) for v in logs.values()]
+        L = max(lens) if lens else 0
+        df = pd.DataFrame({"epoch": list(range(1, L + 1))})
+        for k, v in logs.items():
+            df[k] = v[: len(df)]
+
+    # Nothing workable
+    if df is None or df.empty:
+        st.caption("No curve-like data found in logs.")
+        return
+
+    # Normalize column name lookups (case-insensitive)
+    norm = {c.lower(): c for c in df.columns}
+
+    def pick(*cands):
+        for c in cands:
+            if c in norm:
+                return norm[c]
+        return None
+
+    epoch = pick("epoch")
+    if epoch is None:
+        df.insert(0, "epoch", range(1, len(df) + 1))
+        epoch = "epoch"
+
+    acc = pick("acc", "accuracy", "train_acc", "train_accuracy")
+    val_acc = pick("val_acc", "val_accuracy")
+    loss = pick("loss", "train_loss")
+    val_loss = pick("val_loss", "validation_loss")
+
+    # Build plots
+    df_plot = df.set_index(epoch)
+
+    # Accuracy chart
+    acc_cols = [c for c in [acc, val_acc] if c]
+    if acc_cols:
+        st.markdown("**Accuracy**")
+        st.line_chart(df_plot[acc_cols], use_container_width=True)
+
+    # Loss chart
+    loss_cols = [c for c in [loss, val_loss] if c]
+    if loss_cols:
+        st.markdown("**Loss**")
+        st.line_chart(df_plot[loss_cols], use_container_width=True)
+
+    if not acc_cols and not loss_cols:
+        st.caption("Logs found, but no recognizable acc/loss keys to plot.")
