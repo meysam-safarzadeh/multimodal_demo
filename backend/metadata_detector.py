@@ -122,6 +122,6 @@ class MetadataDetector:
 
 
 if __name__ == "__main__":
-    detector = MetadataDetector("c:\AICU\datasets\multimodal\cirrhosis_example_file_multimodal.csv")
+    detector = MetadataDetector("/home/meysam/multimodal_demo_files/multimodal/dummy_multiimage_testset")
     summary = detector.detect()
     print(summary)
