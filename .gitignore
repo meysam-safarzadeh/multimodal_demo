@@ -6,3 +6,10 @@ backend/registry/migrations/__pycache__/
 backend/services/__pycache__/
 backend/.env
 ml/.env
+ml/models/multimodal_classification/__pycache__/
+ml/models/multimodal_classification/models/__pycache__/
+ml/models/__pycache__/
+ml/models/multimodal_classification/heads/__pycache__/
+ml/models/multimodal_classification/configs/__pycache__/
+ml/models/multimodal_classification/encoders/__pycache__/
+ml/models/multimodal_classification/fusion/__pycache__/
