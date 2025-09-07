@@ -31,7 +31,7 @@ def get_acc_and_confmatrix(
         num_classes = max(preds.max(), targets_np.max()) + 1
 
     confusion = confusion_matrix(targets_np, preds, labels=np.arange(num_classes))
-    return accuracy, confusion
+    return accuracy, confusion.tolist()
 
 
 def clean_text(text: str) -> str:
