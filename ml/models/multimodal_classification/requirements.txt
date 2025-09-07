@@ -1,1 +1,16 @@
+boto3~=1.40.21
 numpy~=2.2.4
+pandas~=2.2.3
+pydantic~=2.11.7
+pydantic_core~=2.33.2
+pydantic-settings~=2.10.1
+requests~=2.32.3
+scikit-learn~=1.6.1
+scipy~=1.15.2
+sentence-transformers~=5.1.0
+torch~=2.8.0
+torchvision~=0.23.0
+tqdm~=4.67.1
+python-dotenv~=1.1.1
+psycopg2-binary==2.9.10
+
