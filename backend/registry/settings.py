@@ -11,7 +11,10 @@ AWS_SECRET_ACCESS_KEY = os.getenv("AWS_SECRET_ACCESS_KEY")
 AWS_DEFAULT_REGION = os.getenv("AWS_DEFAULT_REGION", "eu-central-1")
 SECRET_KEY = "dev-secret-key-change-me"
 DEBUG = True
-ALLOWED_HOSTS = ["127.0.0.1", "localhost"]
+ALLOWED_HOSTS = ["127.0.0.1", "localhost", "real-concrete-caribou.ngrok-free.app"]
+CALLBACK_SECRET = os.getenv("CALLBACK_SECRET", "change-me")
+CALLBACK_TTL = int(os.getenv("CALLBACK_TTL", "900"))  # 15 min
+
 
 INSTALLED_APPS = [
     # Django core apps required for admin
@@ -92,4 +95,4 @@ ECS = {
     "ASSIGN_PUBLIC_IP": os.getenv("ECS_ASSIGN_PUBLIC_IP", "ENABLED"),
     "PLATFORM_VERSION": os.getenv("ECS_PLATFORM_VERSION", "LATEST"),
 }
-S3_BUCKET = os.getenv("AWS_STORAGE_BUCKET_NAME", "demo-bucket")
+S3_BUCKET = os.getenv("S3_BUCKET", "demo-bucket")
