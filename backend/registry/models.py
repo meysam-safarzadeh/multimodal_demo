@@ -50,7 +50,6 @@ class TrainingMetrics(models.Model):
     loss = models.FloatField(null=True, blank=True)
     val_accuracy = models.FloatField(null=True, blank=True)
     val_loss = models.FloatField(null=True, blank=True)
-    # free-form logs, intermediate stats, curve points, etc.
     logs = models.JSONField(default=dict, blank=True)
 
     created_at = models.DateTimeField(auto_now_add=True)
