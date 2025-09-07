@@ -13,3 +13,6 @@ ml/models/multimodal_classification/heads/__pycache__/
 ml/models/multimodal_classification/configs/__pycache__/
 ml/models/multimodal_classification/encoders/__pycache__/
 ml/models/multimodal_classification/fusion/__pycache__/
+ml/utils/__pycache__/
+ml/__pycache__/
+backend/registry/utils/__pycache__/
