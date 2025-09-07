@@ -38,7 +38,7 @@ class DLTrainingParameters:
     column_types: Optional[Dict[str, str]] = None
     feature_columns: Optional[List[str]] = None
     target_column: Optional[str] = None
-    modality_columns: Optional[Dict[str, str]] = None
+    modality_columns: Optional[List[str]] = None
 
 
 @dataclass
