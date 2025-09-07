@@ -8,6 +8,7 @@ import boto3
 from rest_framework import viewsets, status
 from rest_framework.response import Response
 from rest_framework.decorators import action
+from registry.permissions import HasValidCallbackForWrite
 from metadata_detector import MetadataDetector
 from registry import settings
 from .models import Dataset, TrainingJob, Artifact, TrainingMetrics
@@ -19,7 +20,7 @@ from services.training_services import start_training_background
 import pandas as pd
 import io
 import json
-from registry.utils import _parse_s3_uri
+from registry.storage_utils import _parse_s3_uri
 
 
 s3 = boto3.client("s3")
@@ -184,22 +185,24 @@ class TrainingJobViewSet(viewsets.ModelViewSet):
         start_training_background(job.id)
         return Response({"message": "Training started", "job_id": job.id}, status=status.HTTP_202_ACCEPTED)
     
-    @action(detail=True, methods=["get", "patch"], url_path="metrics")
+    @action(detail=True, methods=["get", "patch"], url_path="metrics",
+            permission_classes=[HasValidCallbackForWrite])
     def metrics(self, request, pk=None):
         job = self.get_object()
-        try:
-            tm = job.metrics
-        except TrainingMetrics.DoesNotExist:
-            # create empty row lazily if you like
-            tm = TrainingMetrics.objects.create(job=job)
+        tm, _ = TrainingMetrics.objects.get_or_create(job=job)
 
         if request.method.lower() == "get":
             return Response(TrainingMetricsSerializer(tm).data)
 
-        # PATCH allows partial updates (e.g., streaming logs)
+        # PATCH (token required by permission)
         ser = TrainingMetricsSerializer(tm, data=request.data, partial=True)
         ser.is_valid(raise_exception=True)
         ser.save()
+        # (Optional) also update job status if you include it in payload
+        new_status = request.data.get("status")
+        if new_status:
+            job.status = new_status
+            job.save(update_fields=["status"])
         return Response(ser.data, status=status.HTTP_200_OK)
 
 
