@@ -4,10 +4,11 @@ set -euo pipefail
 echo "[entrypoint] start $(date -u +'%Y-%m-%dT%H:%M:%SZ')"
 echo "[entrypoint] workdir=$(pwd)  python=$(python --version)  pip=$(pip --version)"
 
+set -e
 # -----------------------------
 # Model selection & requirements
 # -----------------------------
-MODEL="${MODEL:-multimodal}"   # default model folder name under models/
+MODEL="${MODEL_NAME:-multimodal}"   # default model folder name under models/
 MODEL_REQ="/app/models/${MODEL}/requirements.txt"
 
 # -----------------------------
