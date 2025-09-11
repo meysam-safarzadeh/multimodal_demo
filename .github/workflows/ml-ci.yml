@@ -49,7 +49,7 @@ jobs:
               -e "s|<S3_BUCKET>|${{ secrets.S3_BUCKET }}|g" \
               -e "s|<API_BASE>|${{ secrets.API_BASE }}|g" \
               -e "s|<CALLBACK_SECRET>|${{ secrets.CALLBACK_SECRET }}|g" \
-              infra/task-def.json > rendered-task-def.json
+              ml/infra/task-def.json > rendered-task-def.json
           echo "rendered=rendered-task-def.json" >> $GITHUB_OUTPUT
 
       - name: Register task definition
