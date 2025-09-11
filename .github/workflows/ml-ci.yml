@@ -9,7 +9,7 @@ permissions:
 
 env:
   AWS_REGION: eu-central-1
-  ECR_REPOSITORY: mm-trainer
+  ECR_REPOSITORY: ml-trainer
   IMAGE_TAG: ${{ github.sha }}
 
 jobs:
