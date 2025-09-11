@@ -14,6 +14,7 @@ DEBUG = True
 ALLOWED_HOSTS = ["127.0.0.1", "localhost", "real-concrete-caribou.ngrok-free.app"]
 CALLBACK_SECRET = os.getenv("CALLBACK_SECRET", "change-me")
 CALLBACK_TTL = int(os.getenv("CALLBACK_TTL", "900"))  # 15 min
+API_BASE = os.getenv("API_BASE", "http://localhost:8000")
 
 
 INSTALLED_APPS = [
