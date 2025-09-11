@@ -10,6 +10,7 @@ import boto3
 import psycopg2
 from psycopg2.extras import Json
 import requests
+from models.schemas import TrainingReport
 from utils.authentication import make_token
 from utils.params_builder import build_training_params
 from utils.storage import download_assets_from_s3, upload_artifacts_to_s3
@@ -31,7 +32,7 @@ logger = logging.getLogger("trainer")
 
 # DB persistence
 def write_training_report(job_id: int, 
-                          training_report: Dict[str, Any], 
+                          training_report: TrainingReport, 
                           artifact_uris: List[Dict[str, str]]) -> None:
     logger.info(f"Writing training report for job_id={job_id}")
 
