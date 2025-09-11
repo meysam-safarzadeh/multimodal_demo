@@ -1,0 +1,81 @@
+name: ML Container CI/CD
+on:
+  push:
+    branches: [ "main" ]
+
+permissions:
+  id-token: write
+  contents: read
+
+env:
+  AWS_REGION: eu-central-1
+  ECR_REPOSITORY: mm-trainer
+  IMAGE_TAG: ${{ github.sha }}
+
+jobs:
+  build-and-deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Configure AWS (OIDC)
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          role-to-assume: ${{ secrets.GH_OIDC_ROLE_ARN }}
+          aws-region: ${{ env.AWS_REGION }}
+
+      - name: Login to ECR
+        uses: aws-actions/amazon-ecr-login@v2
+
+      - name: Build image
+        run: docker build -t $ECR_REPOSITORY:${IMAGE_TAG} -f ml/Dockerfile .
+
+      - name: Tag + Push
+        run: |
+          ECR_URI=${{ secrets.AWS_ACCOUNT_ID }}.dkr.ecr.${AWS_REGION}.amazonaws.com
+          docker tag $ECR_REPOSITORY:${IMAGE_TAG} $ECR_URI/$ECR_REPOSITORY:${IMAGE_TAG}
+          docker tag $ECR_REPOSITORY:${IMAGE_TAG} $ECR_URI/$ECR_REPOSITORY:latest
+          docker push $ECR_URI/$ECR_REPOSITORY:${IMAGE_TAG}
+          docker push $ECR_URI/$ECR_REPOSITORY:latest
+
+      - name: Prepare task definition JSON
+        id: td
+        run: |
+          ECR_URI=${{ secrets.AWS_ACCOUNT_ID }}.dkr.ecr.${AWS_REGION}.amazonaws.com
+          IMAGE="$ECR_URI/$ECR_REPOSITORY:${IMAGE_TAG}"
+          sed -e "s|<IMAGE_PLACEHOLDER>|$IMAGE|g" \
+              -e "s|<ECS_EXECUTION_ROLE_ARN>|${{ secrets.ECS_EXECUTION_ROLE_ARN }}|g" \
+              -e "s|<ECS_TASK_ROLE_ARN>|${{ secrets.ECS_TASK_ROLE_ARN }}|g" \
+              -e "s|<S3_BUCKET>|${{ secrets.S3_BUCKET }}|g" \
+              -e "s|<API_BASE>|${{ secrets.API_BASE }}|g" \
+              -e "s|<CALLBACK_SECRET>|${{ secrets.CALLBACK_SECRET }}|g" \
+              infra/task-def.json > rendered-task-def.json
+          echo "rendered=rendered-task-def.json" >> $GITHUB_OUTPUT
+
+      - name: Register task definition
+        id: register
+        run: |
+          ARN=$(aws ecs register-task-definition \
+            --cli-input-json file://${{ steps.td.outputs.rendered }} \
+            --query 'taskDefinition.taskDefinitionArn' --output text)
+          echo "taskdef_arn=$ARN" >> $GITHUB_OUTPUT
+
+      # Update a service (if you have one)
+      - name: Update ECS Service
+        if: ${{ vars.UPDATE_SERVICE == 'true' }}
+        run: |
+          aws ecs update-service \
+            --cluster "${{ secrets.ECS_CLUSTER }}" \
+            --service "${{ secrets.ECS_SERVICE }}" \
+            --task-definition "${{ steps.register.outputs.taskdef_arn }}"
+
+      # Optional smoke one-off task
+      - name: Smoke run task
+        if: ${{ vars.SMOKE_RUN == 'true' }}
+        run: |
+          aws ecs run-task \
+            --cluster "${{ secrets.ECS_CLUSTER }}" \
+            --launch-type FARGATE \
+            --task-definition "${{ steps.register.outputs.taskdef_arn }}" \
+            --count 1 \
+            --network-configuration "awsvpcConfiguration={subnets=[${{ secrets.SUBNETS }}],securityGroups=[${{ secrets.SECURITY_GROUPS }}],assignPublicIp=ENABLED}"
