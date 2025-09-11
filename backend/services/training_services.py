@@ -28,19 +28,6 @@ def _run_training(job_id: int) -> None:
         else:
             _local_dummy_training(job_id)
 
-        # write some dummy results (replace with real callback/output parsing later)
-        TrainingMetrics.objects.update_or_create(
-            job_id=job_id,
-            defaults={
-                "accuracy": 0.95,
-                "loss": 0.1,
-                "val_accuracy": 0.92,
-                "val_loss": 0.15,
-                "logs": [{"epoch": 1, "accuracy": 0.8, "loss": 0.5, "val_accuracy": 0.75, "val_loss": 0.55},
-                         {"epoch": 2, "accuracy": 0.9, "loss": 0.2, "val_accuracy": 0.85, "val_loss": 0.25},
-                         {"epoch": 3, "accuracy": 0.95, "loss": 0.1, "val_accuracy": 0.9, "val_loss": 0.15}],
-            },
-        )
         Artifact.objects.create(job_id=job_id, kind="model",
                                 s3_uri=f"s3://{settings.S3_BUCKET}/models/job-{job_id}.pt")
 
@@ -88,9 +75,30 @@ def ecs_run_task(job_id: int) -> str:
                     "environment": [
                         {"name": "MODEL", "value": "multimodal"},
                         {"name": "JOB_ID", "value": str(job_id)},
+                        {"name": "S3_BUCKET", "value": settings.S3_BUCKET},
+                        {"name": "API_BASE", "value": settings.API_BASE},
+                        {"name": "CALLBACK_SECRET", "value": settings.CALLBACK_SECRET},
+                        {"name": "CALLBACK_TTL", "value": str(settings.CALLBACK_TTL)},
+                        {"name": "AWS_ACCESS_KEY_ID", "value": settings.AWS_ACCESS_KEY_ID},
+                        {"name": "AWS_SECRET_ACCESS_KEY", "value": settings.AWS_SECRET_ACCESS_KEY},
+                        {"name": "epochs", "value": str(settings.EPOCHS)},
+                        {"name": "learning_rate", "value": str(settings.LEARNING_RATE)},
+                        {"name": "batch_size", "value": str(settings.BATCH_SIZE)},
+                        {"name": "val_split", "value": str(settings.VAL_SPLIT)},
+                        {"name": "feature_columns", "value": ",".join(settings.FEATURE_COLUMNS or [])},
+                        {"name": "modality_columns", "value": ",".join(settings.MODALITY_COLUMNS or [])},
+                        {"name": "target_column", "value": settings.TARGET_COLUMN},
+                        {"name": "column_types", "value": settings.COLUMN_TYPES or "{}"},
+                        {"name": "early_stopping", "value": str(settings.EARLY_STOPPING)},
+                        {"name": "early_stopping_patience", "value": str(settings.EARLY_STOPPING_PATIENCE)},
+                        {"name": "random_seed", "value": str(settings.RANDOM_SEED)},
+                        {"name": "eval_steps", "value": str(settings.EVAL_STEPS)},
+                        {"name": "WORKDIR", "value": "/tmp/trainer"},
+                        {"name": "ASSETS", "value": str(settings.ASSETS)},
+                        {"name": "OUTPUT_PREFIX", "value": "artifacts/"},
+                        {"name": "TRAIN_PCT", "value": str(settings.TRAIN_PCT)},
+                        {"name": "TEST_PCT", "value": str(settings.TEST_PCT)}
                     ],
-                    # If you want to override the command instead of env:
-                    # "command": ["python", "/app/main.py", "--job-id", str(job_id)]
                 }
             ]
         },
