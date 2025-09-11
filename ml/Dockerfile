@@ -14,7 +14,7 @@ WORKDIR /app
 #     rm -rf /var/lib/apt/lists/*
 
 # Copy only the ml/ subtree
-COPY . /app
+COPY ./ml /app
 
 # Make entrypoint executable
 RUN chmod +x /app/entrypoint.sh
