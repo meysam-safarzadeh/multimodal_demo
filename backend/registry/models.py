@@ -36,9 +36,9 @@ class TrainingJob(models.Model):
     ecs_task_arn = models.CharField(max_length=512, null=True, blank=True)
     epochs = models.IntegerField(default=5, validators=[MinValueValidator(1)])
     learning_rate = models.FloatField(default=0.001, validators=[MinValueValidator(1e-6), MaxValueValidator(1.0)])
-    train_pct = models.IntegerField(default=80, validators=[MinValueValidator(1), MaxValueValidator(99)])
-    test_pct = models.IntegerField(default=20, validators=[MinValueValidator(1), MaxValueValidator(99)])
     created_at = models.DateTimeField(auto_now_add=True)
+    batch_size = models.IntegerField(default=16, validators=[MinValueValidator(1)])
+    val_split = models.FloatField(default=0.2, validators=[MinValueValidator(0.0), MaxValueValidator(1.0)])
     
 
 class TrainingMetrics(models.Model):
