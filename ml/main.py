@@ -47,7 +47,11 @@ def write_training_report(job_id: int,
 
     token = make_token(job_id, settings.callback_secret, settings.callback_ttl)
     url = f"{settings.api_base}/training_jobs/{job_id}/metrics/"
-    resp = requests.patch(url, json=payload, headers={"X-Callback-Token": token}, timeout=10)
+    headers = {
+        "Content-Type": "application/json",
+        "X-Callback-Token": token,
+    }
+    resp = requests.patch(url, json=payload, headers=headers, timeout=10)
     resp.raise_for_status()
     
     # Update logger
