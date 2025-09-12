@@ -23,5 +23,5 @@ class HasValidCallbackForWrite(BasePermission):
         return verify_callback_token(
             token,
             job_id,
-            getattr(settings, "SIGNED_CALLBACK_SECRET", "")
+            getattr(settings, "CALLBACK_SECRET", "")
         )
