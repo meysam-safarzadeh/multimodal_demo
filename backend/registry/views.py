@@ -116,7 +116,7 @@ class DatasetViewSet(viewsets.ModelViewSet):
 
         threading.Thread(
             target=upload_to_s3,
-            args=(csv_tmp_path, saved_files, dataset.id),
+            args=(csv_tmp_path, saved_files, dataset.pk),
             daemon=True
         ).start()
 
