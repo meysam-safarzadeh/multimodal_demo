@@ -37,8 +37,8 @@ class DLTrainingParameters:
     configuration: TrainingConfiguration
     target_column: str
     column_types: Dict[str, str]
-    feature_columns: Optional[List[str]] = []
-    modality_columns: Optional[List[str]] = []
+    feature_columns: Optional[List[str]] = field(default_factory=list)
+    modality_columns: Optional[List[str]] = field(default_factory=list)
 
 
 @dataclass
