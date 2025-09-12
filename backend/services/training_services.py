@@ -90,7 +90,7 @@ def ecs_run_task(job: TrainingJob) -> str:
         {"name": "WORKDIR", "value": "/tmp/trainer"},
 
         # IMPORTANT: match Settings field
-        {"name": "ASSETS_JSON", "value": json.dumps(assets)},
+        {"name": "ASSETS", "value": json.dumps(assets)},
     ]
 
     resp = ecs.run_task(
