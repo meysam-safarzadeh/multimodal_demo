@@ -38,27 +38,27 @@ jobs:
           docker push $ECR_URI/$ECR_REPOSITORY:${IMAGE_TAG}
           docker push $ECR_URI/$ECR_REPOSITORY:latest
 
-      - name: Prepare task definition JSON
-        id: td
-        run: |
-          ECR_URI=${{ secrets.AWS_ACCOUNT_ID }}.dkr.ecr.${AWS_REGION}.amazonaws.com
-          IMAGE="$ECR_URI/$ECR_REPOSITORY:${IMAGE_TAG}"
-          sed -e "s|<IMAGE_PLACEHOLDER>|$IMAGE|g" \
-              -e "s|<ECS_EXECUTION_ROLE_ARN>|${{ secrets.ECS_EXECUTION_ROLE_ARN }}|g" \
-              -e "s|<ECS_TASK_ROLE_ARN>|${{ secrets.ECS_TASK_ROLE_ARN }}|g" \
-              -e "s|<S3_BUCKET>|${{ secrets.S3_BUCKET }}|g" \
-              -e "s|<API_BASE>|${{ secrets.API_BASE }}|g" \
-              -e "s|<CALLBACK_SECRET>|${{ secrets.CALLBACK_SECRET }}|g" \
-              ml/infra/task-def.json > rendered-task-def.json
-          echo "rendered=rendered-task-def.json" >> $GITHUB_OUTPUT
+      # - name: Prepare task definition JSON
+      #   id: td
+      #   run: |
+      #     ECR_URI=${{ secrets.AWS_ACCOUNT_ID }}.dkr.ecr.${AWS_REGION}.amazonaws.com
+      #     IMAGE="$ECR_URI/$ECR_REPOSITORY:${IMAGE_TAG}"
+      #     sed -e "s|<IMAGE_PLACEHOLDER>|$IMAGE|g" \
+      #         -e "s|<ECS_EXECUTION_ROLE_ARN>|${{ secrets.ECS_EXECUTION_ROLE_ARN }}|g" \
+      #         -e "s|<ECS_TASK_ROLE_ARN>|${{ secrets.ECS_TASK_ROLE_ARN }}|g" \
+      #         -e "s|<S3_BUCKET>|${{ secrets.S3_BUCKET }}|g" \
+      #         -e "s|<API_BASE>|${{ secrets.API_BASE }}|g" \
+      #         -e "s|<CALLBACK_SECRET>|${{ secrets.CALLBACK_SECRET }}|g" \
+      #         ml/infra/task-def.json > rendered-task-def.json
+      #     echo "rendered=rendered-task-def.json" >> $GITHUB_OUTPUT
 
-      - name: Register task definition
-        id: register
-        run: |
-          ARN=$(aws ecs register-task-definition \
-            --cli-input-json file://${{ steps.td.outputs.rendered }} \
-            --query 'taskDefinition.taskDefinitionArn' --output text)
-          echo "taskdef_arn=$ARN" >> $GITHUB_OUTPUT
+      # - name: Register task definition
+      #   id: register
+      #   run: |
+      #     ARN=$(aws ecs register-task-definition \
+      #       --cli-input-json file://${{ steps.td.outputs.rendered }} \
+      #       --query 'taskDefinition.taskDefinitionArn' --output text)
+      #     echo "taskdef_arn=$ARN" >> $GITHUB_OUTPUT
 
       # Update a service (if you have one)
       - name: Update ECS Service
