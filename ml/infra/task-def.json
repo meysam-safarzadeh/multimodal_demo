@@ -1,5 +1,5 @@
 {
-  "family": "mm-training-family:3",
+  "family": "mm-training-family",
   "networkMode": "awsvpc",
   "requiresCompatibilities": ["FARGATE"],
   "cpu": "1024",
