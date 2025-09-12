@@ -1,4 +1,5 @@
 # backend/services/training_services.py
+import json
 import threading
 import time
 from typing import Optional
@@ -57,12 +58,44 @@ def ecs_run_task(job: TrainingJob) -> str:
         aws_secret_access_key=settings.AWS_SECRET_ACCESS_KEY,
     )
     # Retrieve the dataset's CSV S3 URI using job.dataset_id
-    dataset = Dataset.objects.get(id=job.dataset.id)
-    assets = [{"key": "train_file", "s3_uri": dataset.csv_s3_uri},{"key": "train_folder", "s3_uri": dataset.data_s3_uri}]
+    dataset = Dataset.objects.get(id=job.dataset.pk)
+    assets = [
+        {"key": "train_file", "s3_uri": dataset.csv_s3_uri},
+        {"key": "train_folder", "s3_uri": dataset.data_s3_uri},
+    ]
+
+    env = [
+        {"name": "MODEL", "value": "multimodal"},
+        {"name": "JOB_ID", "value": str(job.pk)},
+        {"name": "S3_BUCKET", "value": settings.S3_BUCKET},
+        {"name": "API_BASE", "value": settings.API_BASE},
+        {"name": "CALLBACK_SECRET", "value": settings.CALLBACK_SECRET},
+        {"name": "CALLBACK_TTL", "value": str(settings.CALLBACK_TTL)},
+        {"name": "AWS_ACCESS_KEY_ID", "value": settings.AWS_ACCESS_KEY_ID},
+        {"name": "AWS_SECRET_ACCESS_KEY", "value": settings.AWS_SECRET_ACCESS_KEY},
+
+        # Hyperparams
+        {"name": "EPOCHS", "value": str(job.epochs)},
+        {"name": "LEARNING_RATE", "value": str(job.learning_rate)},
+        {"name": "BATCH_SIZE", "value": str(job.batch_size)},
+        {"name": "VALIDATION_SPLIT", "value": str(job.val_split)},
+
+        # Schema: send JSON
+        {"name": "FEATURE_COLUMNS", "value": json.dumps(job.feature_columns or [])},
+        {"name": "MODALITY_COLUMNS", "value": json.dumps(job.modality_columns or [])},
+        {"name": "TARGET_COLUMN", "value": job.target_col or ""},
+        {"name": "COLUMN_TYPES", "value": json.dumps(dataset.column_types or {})},
+
+        {"name": "MODEL_NAME", "value": "multimodal_classification"},
+        {"name": "WORKDIR", "value": "/tmp/trainer"},
+
+        # IMPORTANT: match Settings field
+        {"name": "ASSETS_JSON", "value": json.dumps(assets)},
+    ]
 
     resp = ecs.run_task(
         cluster=settings.ECS["CLUSTER"],
-        taskDefinition=settings.ECS["TASK_DEFINITION"],
+        taskDefinition="mm-training-family:3",
         launchType="FARGATE",
         platformVersion=settings.ECS["PLATFORM_VERSION"],
         networkConfiguration={
@@ -76,41 +109,17 @@ def ecs_run_task(job: TrainingJob) -> str:
             "containerOverrides": [
                 {
                     "name": settings.ECS["CONTAINER_NAME"],
-                    "environment": [
-                        {"name": "MODEL", "value": "multimodal"},
-                        {"name": "JOB_ID", "value": str(job.id)},
-                        {"name": "S3_BUCKET", "value": settings.S3_BUCKET},
-                        {"name": "API_BASE", "value": settings.API_BASE},
-                        {"name": "CALLBACK_SECRET", "value": settings.CALLBACK_SECRET},
-                        {"name": "CALLBACK_TTL", "value": str(settings.CALLBACK_TTL)},
-                        {"name": "AWS_ACCESS_KEY_ID", "value": settings.AWS_ACCESS_KEY_ID},
-                        {"name": "AWS_SECRET_ACCESS_KEY", "value": settings.AWS_SECRET_ACCESS_KEY},
-                        {"name": "epochs", "value": str(job.epochs)},
-                        {"name": "learning_rate", "value": str(job.learning_rate)},
-                        {"name": "batch_size", "value": str(job.batch_size)},
-                        {"name": "val_split", "value": str(job.val_split)},
-                        {"name": "feature_columns", "value": ",".join(job.feature_columns)},
-                        {"name": "modality_columns", "value": ",".join(job.modality_columns)},
-                        {"name": "target_column", "value": job.target_col},
-                        {"name": "column_types", "value": str(dataset.column_types or "{}")},
-                        {"name": "MODEL_NAME", "value": "multimodal_classification"},
-                        # {"name": "early_stopping", "value": str(settings.EARLY_STOPPING)},
-                        # {"name": "early_stopping_patience", "value": str(settings.EARLY_STOPPING_PATIENCE)},
-                        # {"name": "random_seed", "value": str(settings.RANDOM_SEED)},
-                        # {"name": "eval_steps", "value": str(job.eval_steps)},
-                        {"name": "WORKDIR", "value": "/tmp/trainer"},
-                        {"name": "ASSETS", "value": str(assets)},
-                        {"name": "OUTPUT_PREFIX", "value": "artifacts/"}
-                    ],
+                    "environment": env,
                 }
             ]
         },
     )
+
     failures = resp.get("failures") or []
     if failures:
         raise RuntimeError(f"ECS run_task failed: {failures}")
     task_arn = resp["tasks"][0]["taskArn"]
-    TrainingJob.objects.filter(id=job.id).update(ecs_task_arn=task_arn)
+    TrainingJob.objects.filter(id=job.pk).update(ecs_task_arn=task_arn)
     return task_arn
 
 def _ecs_wait_until_stopped(task_arn: str, poll=5, timeout=3600):
