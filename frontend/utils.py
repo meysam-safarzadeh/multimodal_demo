@@ -129,13 +129,13 @@ def render_training_curves(metrics: dict):
     acc_cols = [c for c in [acc, val_acc] if c]
     if acc_cols:
         st.markdown("**Accuracy**")
-        st.line_chart(df_plot[acc_cols], use_container_width=True)
+        st.line_chart(df_plot[acc_cols], use_container_width=True, color=["#FF5733", "#3498DB"])
 
     # Loss chart
     loss_cols = [c for c in [loss, val_loss] if c]
     if loss_cols:
         st.markdown("**Loss**")
-        st.line_chart(df_plot[loss_cols], use_container_width=True)
+        st.line_chart(df_plot[loss_cols], use_container_width=True, color=["#FF5733", "#3498DB"])
 
     if not acc_cols and not loss_cols:
         st.caption("Logs found, but no recognizable acc/loss keys to plot.")

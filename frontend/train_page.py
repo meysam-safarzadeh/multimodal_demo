@@ -80,8 +80,8 @@ def render_train_results_page(api_url: str, on_back, on_home):
         cols = st.columns(4)
         cols[0].metric("Accuracy", f"{m.get('accuracy', '—')}")
         cols[1].metric("Loss", f"{m.get('loss', '—')}")
-        cols[2].metric("Val Acc", f"{m.get('val_accuracy', '—')}")
-        cols[3].metric("Val Loss", f"{m.get('val_loss', '—')}")
+        cols[2].metric("Validation Accuracy", f"{m.get('val_accuracy', '—')}")
+        cols[3].metric("Validation Loss", f"{m.get('val_loss', '—')}")
 
         # fancy plots
         st.subheader("📉 Training Curves")
