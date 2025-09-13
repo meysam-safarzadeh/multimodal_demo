@@ -68,6 +68,7 @@ jobs:
             --cluster "${{ secrets.ECS_CLUSTER }}" \
             --service "${{ secrets.ECS_SERVICE }}" \
             --task-definition "${{ steps.register.outputs.taskdef_arn }}"
+            --force-new-deployment
 
       # Optional smoke one-off task
       - name: Smoke run task
