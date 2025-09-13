@@ -58,7 +58,7 @@ class MultiModalDataset(Dataset):
         self.cat_maps = {}
         for col, typ in self.column_types.items():
             if typ == "categorical":
-                uniq = sorted(self.df[col].unique())
+                uniq = sorted(self.df[col].dropna().astype(str).unique())
                 self.cat_maps[col] = {cat: i for i, cat in enumerate(uniq)}
 
         self.image_loader = image_loader if image_loader is not None else self.default_image_loader
