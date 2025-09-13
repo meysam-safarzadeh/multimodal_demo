@@ -95,7 +95,7 @@ def ecs_run_task(job: TrainingJob) -> str:
 
     resp = ecs.run_task(
         cluster=settings.ECS["CLUSTER"],
-        taskDefinition="mm-training-family:3",
+        taskDefinition=settings.ECS["TASK_DEFINITION"],
         launchType="FARGATE",
         platformVersion=settings.ECS["PLATFORM_VERSION"],
         networkConfiguration={
