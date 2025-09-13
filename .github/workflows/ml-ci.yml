@@ -38,7 +38,7 @@ jobs:
           docker push $ECR_URI/$ECR_REPOSITORY:${IMAGE_TAG}
           docker push $ECR_URI/$ECR_REPOSITORY:latest
 
-      # 🚀 Optionally force ECS service to pull new :latest image
+      # Optionally force ECS service to pull new :latest image
       - name: Force new deployment
         if: ${{ vars.UPDATE_SERVICE == 'true' }}
         run: |
@@ -47,7 +47,7 @@ jobs:
             --service "${{ secrets.ECS_SERVICE }}" \
             --force-new-deployment
 
-      # 🚀 Optionally run a one-off smoke task using TASK_DEFINITION
+      # Optionally run a one-off smoke task using TASK_DEFINITION
       - name: Smoke run task
         if: ${{ vars.SMOKE_RUN == 'true' }}
         run: |
