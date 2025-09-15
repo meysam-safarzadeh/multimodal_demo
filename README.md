@@ -1,4 +1,4 @@
-# 🧠 Multimodal ML Training Platform
+# 🧠 Multimodal Classification Training Platform
 
 An end-to-end **multimodal ML training** system with a Streamlit UI, a Django REST API, and a containerized PyTorch trainer that runs on **AWS ECS Fargate**. It demonstrates dataset intake, automated metadata detection, parameterized training jobs, secure callback reporting, and artifact management—**ML engineering + MLOps** in one compact project.
 
