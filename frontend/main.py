@@ -22,9 +22,12 @@ def go(page: str):
 
 # --- PAGE 0: Welcome ---
 if st.session_state.page == "Welcome":
-    st.title("🤖 Welcome to the Multimodal Trainer Demo")
+    st.title("🤖 Welcome to the Multimodal Classification Trainer Demo")
     st.write("This wizard will take you from data upload to training configuration.")
     st.button("🚀 Start", on_click=lambda: go("Dataset Selection"))
+    st.markdown(
+        "Check out the [source code on GitHub](https://github.com/meysam-safarzadeh/multimodal_demo)!"
+    )
 
 # --- PAGE 1: Dataset Selection ---
 elif st.session_state.page == "Dataset Selection":
