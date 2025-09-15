@@ -28,17 +28,16 @@ def train(params: DLTrainingParameters) -> tuple[TrainingReport, Optional[Artifa
     # 2. Load and filter the full dataset for complete rows
     full_df = pd.read_csv(assets_paths["train_file"])
     full_df = clean_text_columns(
-        full_df,
-        params.feature_columns,
-        params.column_types,
+        df=full_df,
+        column_types=params.column_types,
+        selected_columns=params.feature_columns
     )
     base_dataset = MultiModalDataset(
-        full_df,
-        assets_paths["train_folder"],
-        params.feature_columns,
-        params.column_types,
-        params.target_column,
-    ) 
+        df=full_df,
+        train_folder=assets_paths["train_folder"],
+        column_types=params.column_types,
+        target_column=params.target_column,
+    )
     train_subset, val_subset = random_split(base_dataset, [1 - params.validation_split, params.validation_split])
     
     # 3. Get DataFrame of only the training samples
@@ -63,19 +62,19 @@ def train(params: DLTrainingParameters) -> tuple[TrainingReport, Optional[Artifa
 
     # 5. Create train/val Datasets using fitted normalizer and categorical maps
     train_dataset = MultiModalDataset(
-        train_df,
-        assets_paths["train_folder"],
-        params.feature_columns,
-        params.column_types,
-        params.target_column,
+        df=train_df,
+        train_folder=assets_paths["train_folder"],
+        column_types=params.column_types,
+        selected_columns=params.feature_columns,
+        target_column=params.target_column,
         tabular_normalizer=tabnorm
     )
     val_dataset = MultiModalDataset(
-        val_df,
-        assets_paths["train_folder"],
-        params.feature_columns,
-        params.column_types,
-        params.target_column,
+        df=val_df,
+        train_folder=assets_paths["train_folder"],
+        selected_columns=params.feature_columns,
+        column_types=params.column_types,
+        target_column=params.target_column,
         tabular_normalizer=tabnorm
     )
 
