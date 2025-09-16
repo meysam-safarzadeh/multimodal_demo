@@ -117,7 +117,7 @@ def render_config_page(api_url: str, csv_blob: bytes, on_back, on_home):
 
     # 1) Multi-select feature columns
     feature_cols = st.multiselect(
-        "Select feature columns",
+        "Select  tabular feature columns",
         options=suggested_features,
         default=st.session_state.get("feature_cols", []),
     )
@@ -125,7 +125,7 @@ def render_config_page(api_url: str, csv_blob: bytes, on_back, on_home):
 
     # 2) Multi-select modality columns
     modality_cols = st.multiselect(
-        "Select modality columns",
+        "Select modality columns (image, text)",
         options=suggested_modalities,
         default=st.session_state.get("modality_cols", []),
     )
