@@ -15,7 +15,7 @@ ALLOWED_HOSTS = os.getenv("ALLOWED_HOSTS", "").split(",")
 CALLBACK_SECRET = os.getenv("CALLBACK_SECRET", "change-me")
 CALLBACK_TTL = int(os.getenv("CALLBACK_TTL", "900"))  # 15 min
 API_BASE = os.getenv("API_BASE", "http://localhost:8000")
-
+DATA_UPLOAD_MAX_NUMBER_FILES = 1500
 
 INSTALLED_APPS = [
     # Django core apps required for admin
