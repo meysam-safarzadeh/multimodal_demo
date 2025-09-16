@@ -36,20 +36,19 @@ def render_upload_page(api_base: str, go):
         st.warning(f"Couldn’t load datasets: {e}")
 
     # build options
-    options = ["➕ Upload new dataset"]
+    options = ["➕ Select an existing dataset"]
     label_to_item = {}
     for item in datasets:
         ds_id = item.get("id")
         name = item.get("name", f"dataset-{ds_id}")
-        created = (item.get("created_at") or "")[:19].replace("T", " ")
-        label = f"[{ds_id}] {name} • {created}"
+        label = f"{name} Dataset"
         options.append(label)
         label_to_item[label] = item
 
     choice = st.selectbox("Select existing dataset or upload new:", options, index=0)
 
     # existing dataset branch
-    if choice != "➕ Upload new dataset":
+    if choice != "➕ Select an existing dataset":
         selected = label_to_item[choice]
         st.session_state.dataset = selected
         st.session_state.dataset_id = selected.get("id")
