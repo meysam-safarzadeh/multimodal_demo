@@ -90,13 +90,13 @@ class MetadataDetector:
             elif (pd.api.types.is_numeric_dtype(series) and n_unique == len(series)):
                 column_types[col] = 'other'
                 other_columns.append(col)
-            elif pd.api.types.is_numeric_dtype(series):
-                column_types[col] = 'numeric'
-                feature_columns.append(col)
-                modalities.add('tabular')
             elif n_unique < 20:
                 column_types[col] = 'categorical'
                 target_columns_categorical.append(col)
+                feature_columns.append(col)
+                modalities.add('tabular')
+            elif pd.api.types.is_numeric_dtype(series):
+                column_types[col] = 'numeric'
                 feature_columns.append(col)
                 modalities.add('tabular')
             else:
