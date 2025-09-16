@@ -35,6 +35,7 @@ def train(params: DLTrainingParameters) -> tuple[TrainingReport, Optional[Artifa
     base_dataset = MultiModalDataset(
         df=full_df,
         train_folder=assets_paths["train_folder"],
+        selected_columns=params.feature_columns,
         column_types=params.column_types,
         target_column=params.target_column,
     )
