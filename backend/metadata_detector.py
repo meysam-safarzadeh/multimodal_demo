@@ -83,13 +83,13 @@ class MetadataDetector:
                 column_types[col] = 'text_path'
                 modality_columns.append(col)
                 modalities.add('text')
+            elif (pd.api.types.is_numeric_dtype(series) and n_unique == len(series)) or "ID" in col:
+                column_types[col] = 'other'
+                other_columns.append(col)
             elif avg_str_len > 20 and n_unique > 10:
                 column_types[col] = 'text'
                 modality_columns.append(col)
                 modalities.add('text')
-            elif (pd.api.types.is_numeric_dtype(series) and n_unique == len(series)):
-                column_types[col] = 'other'
-                other_columns.append(col)
             elif n_unique < 20:
                 column_types[col] = 'categorical'
                 target_columns_categorical.append(col)
