@@ -85,7 +85,6 @@ class MetadataDetector:
                 modalities.add('text')
             elif avg_str_len > 20 and n_unique > 10:
                 column_types[col] = 'text'
-                feature_columns.append(col)
                 modality_columns.append(col)
                 modalities.add('text')
             elif (pd.api.types.is_numeric_dtype(series) and n_unique == len(series)):
