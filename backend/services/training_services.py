@@ -23,15 +23,15 @@ def _run_training(job_id: int) -> None:
             job.started_at = timezone.now()
             job.save()
 
-        if _ecs_configured():
-            task_arn = ecs_run_task(job)
-            _ecs_wait_until_stopped(task_arn)
-        else:
-            _local_dummy_training(job_id)
+        task_arn = ecs_run_task(job)
+        exitcode = _ecs_wait_until_stopped(task_arn)
 
+        if exitcode != 0:
+            raise RuntimeError(f"Training job in ECS failed with exit code {exitcode}")
+   
         Artifact.objects.create(job_id=job_id, kind="model",
                                 s3_uri=f"s3://{settings.S3_BUCKET}/models/job-{job_id}.pt")
-
+     
         TrainingJob.objects.filter(id=job_id).update(
             status=TrainingJob.Status.COMPLETED, ended_at=timezone.now()
         )
@@ -133,6 +133,9 @@ def _ecs_wait_until_stopped(task_arn: str, poll=5, timeout=3600):
         desc = ecs.describe_tasks(cluster=cluster, tasks=[task_arn])
         tasks = desc.get("tasks", [])
         if tasks and tasks[0].get("lastStatus") == "STOPPED":
+            exitcode = tasks[0].get("containers", [{}])[0].get("exitCode")
             break
         if waited >= timeout:
             raise TimeoutError("ECS task did not stop within timeout")
+    
+    return exitcode
