@@ -275,14 +275,14 @@ VALIDATION_SPLIT=0.2
 
 ## 🔌 Key API Endpoints (backend)
 
-* `POST /api/datasets/upload_and_detect/` → upload CSV/files, detect metadata, stream upload to S3
-* `GET /api/datasets/` → list datasets
-* `GET /api/datasets/{id}/preview/` → CSV head preview (if uploaded)
-* `POST /api/training_jobs/` → create training job (dataset + schema + hparams)
-* `POST /api/training_jobs/{id}/start/` → ECS RunTask for this job
-* `PATCH /api/training_jobs/{id}/metrics/` → trainer callback (requires `X-Callback-Token`)
-* `GET /api/metrics/?job={id}` → fetch metrics for a job
-* `GET /api/artifacts/?job={id}` → list artifact URIs
+* `POST    {baseURL}/datasets/upload_and_detect/` → upload CSV/files, detect metadata, stream upload to S3
+* `GET     {baseURL}/datasets/` → list datasets
+* `GET     {baseURL}/datasets/{id}/preview/` → CSV head preview (if uploaded)
+* `POST    {baseURL}/training_jobs/` → create training job (dataset + schema + hparams)
+* `POST    {baseURL}/training_jobs/{id}/start/` → ECS RunTask for this job
+* `PATCH   {baseURL}/training_jobs/{id}/metrics/` → trainer callback (requires `X-Callback-Token`)
+* `GET     {baseURL}/training_jobs/{id}/metrics/` → fetch metrics for a job
+* `GET     {baseURL}/training_jobs/{id}/artifacts/` → list artifact URIs
 
 ---
 
