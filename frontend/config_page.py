@@ -117,17 +117,15 @@ def render_config_page(api_url: str, csv_blob: bytes, on_back, on_home):
 
     # 1) Multi-select feature columns
     feature_cols = st.multiselect(
-        "Select  tabular feature columns",
+        "Select  tabular feature column(s)",
         options=suggested_features,
-        default=st.session_state.get("feature_cols", []),
     )
     st.session_state["feature_cols"] = feature_cols
 
     # 2) Multi-select modality columns
     modality_cols = st.multiselect(
-        "Select modality columns (image, text)",
+        "Select modality column(s) (image, text)",
         options=suggested_modalities,
-        default=st.session_state.get("modality_cols", []),
     )
     st.session_state["modality_cols"] = modality_cols
 
@@ -139,7 +137,11 @@ def render_config_page(api_url: str, csv_blob: bytes, on_back, on_home):
     else:
         prev_target = st.session_state.get("target_col")
         idx = available_targets.index(prev_target) if prev_target in available_targets else 0
-        target_col = st.selectbox("Select target column", options=available_targets, index=idx)
+        target_col = st.selectbox(
+            "Select target column", 
+            options=available_targets,
+            index=None
+        )
         st.session_state["target_col"] = target_col
 
     # ------- Training configuration (put this BEFORE the nav buttons) -------
@@ -212,6 +214,13 @@ def render_config_page(api_url: str, csv_blob: bytes, on_back, on_home):
                 st.session_state.page = "Train & Results"   # go to Page 3
             except Exception as e:
                 st.error(f"Failed to create training job: {e}")
-
-        st.button("➡️ Next (create job)", on_click=_create_and_go, use_container_width=True)
-
+        is_next_enabled = (
+            target_col is not None and 
+            (modality_cols or feature_cols)
+        )
+        st.button(
+            "➡️ Next (create job)",
+            on_click=_create_and_go,
+            use_container_width=True,
+            disabled=not is_next_enabled
+        )
