@@ -60,7 +60,7 @@ class TrainingMetrics(models.Model):
         verbose_name_plural = "Training Metrics"
 
     def __str__(self):
-        return f"Metrics(job={self.job_id})"
+        return f"Metrics(job={self.job.pk})"
 
 class Artifact(models.Model):
     job = models.ForeignKey(TrainingJob, on_delete=models.CASCADE, related_name="artifacts")
