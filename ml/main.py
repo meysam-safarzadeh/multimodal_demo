@@ -53,7 +53,13 @@ def write_training_report(job_id: int,
     }
     resp = requests.patch(url, json=payload, headers=headers, timeout=10)
     resp.raise_for_status()
-    
+
+    resp_artifacts = requests.patch(
+        f"{settings.api_base}/training_jobs/{job_id}/artifacts/",
+        json={"s3_uri": artifact_uris}
+    )
+    resp_artifacts.raise_for_status()
+
     # Update logger
     if resp.status_code == 200:
         logger.info(f"Successfully updated training metrics for job_id={job_id}")
