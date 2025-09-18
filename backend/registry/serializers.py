@@ -27,7 +27,8 @@ class TrainingMetricsSerializer(serializers.ModelSerializer):
 class TrainingArtifactsSerializer(serializers.ModelSerializer):
     class Meta:
         model = TrainingArtifacts
-        fields = "__all__"
+        fields = ["id", "job", "s3_uri", "created_at"]
+        read_only_fields = ["id", "job", "created_at"]
 
 class TrainingJobSerializer(serializers.ModelSerializer):
     metrics = TrainingMetricsSerializer(read_only=True)
