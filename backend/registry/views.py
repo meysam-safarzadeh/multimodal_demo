@@ -21,7 +21,7 @@ import pandas as pd
 import io
 import json
 from registry.storage_utils import _parse_s3_uri
-
+from registry.utils.views_utils import _job_artifacts_list
 
 s3 = boto3.client("s3")
 
@@ -205,11 +205,23 @@ class TrainingJobViewSet(viewsets.ModelViewSet):
             job.save(update_fields=["status"])
         return Response(ser.data, status=status.HTTP_200_OK)
     
-    @action(detail=True, methods=["get", "patch"], url_path="artifacts")
+
+    @action(detail=True, methods=["get", "patch"], url_path="artifacts",
+            permission_classes=[HasValidCallbackForWrite])
     def artifacts(self, request, pk=None):
+        """
+        GET  -> list artifacts for this job
+        PATCH -> upsert artifacts (trainer callback). Body:
+        {
+          "artifacts": [
+            {"key":"trained_model","s3_uri":"s3://.../model.pt","size_bytes":1234,"content_type":"application/octet-stream"},
+            {"key":"id2label","s3_uri":"s3://.../id2label.json","size_bytes":234,"content_type":"application/json"}
+          ]
+        }
+        """
         job = self.get_object()
         tm, _ = TrainingArtifacts.objects.get_or_create(job=job)
-        
+
         if request.method.lower() == "get":
             return Response(TrainingArtifactsSerializer(tm).data)
 
@@ -218,3 +230,76 @@ class TrainingJobViewSet(viewsets.ModelViewSet):
         ser.is_valid(raise_exception=True)
         ser.save()
         return Response(ser.data, status=status.HTTP_200_OK)
+
+    @action(detail=True, methods=["get"], url_path="artifacts/presign")
+    def artifacts_presign(self, request, pk=None):
+        """
+        Presign download URLs for artifacts stored in a JSONField on the job.
+
+        - GET /api/training_jobs/{id}/artifacts/presign/
+          -> returns a list of presigned URLs for all artifacts
+
+        - GET /api/training_jobs/{id}/artifacts/presign/?key=<artifact_key>
+          -> returns a single object for that artifact
+
+        Optional:
+        - ?expires=3600  (seconds)
+        """
+        job = self.get_object()
+        artifacts = _job_artifacts_list(job)
+        if not artifacts:
+            return Response({"detail": "No artifacts recorded for this job."}, status=status.HTTP_404_NOT_FOUND)
+
+        key = request.query_params.get("key")
+        try:
+            expires = int(request.query_params.get("expires", 3600))
+        except ValueError:
+            return Response({"detail": "expires must be an integer (seconds)."}, status=400)
+
+        # Select targets
+        if key:
+            targets = [a for a in artifacts if a.get("key") == key]
+            if not targets:
+                return Response({"detail": f"Artifact with key '{key}' not found."}, status=404)
+        else:
+            targets = artifacts
+
+        out = []
+
+        for a in targets:
+            a_key = a.get("key")
+            a_uri = a.get("s3_uri")
+            if not a_key or not a_uri:
+                out.append({"key": a_key, "error": "invalid artifact entry (missing key or s3_uri)"})
+                continue
+
+            try:
+                bucket, s3_key = _parse_s3_uri(a_uri)
+            except Exception as e:
+                out.append({"key": a_key, "s3_uri": a_uri, "error": str(e)})
+                continue
+
+            # Optional HEAD for metadata
+            try:
+                head = s3.head_object(Bucket=bucket, Key=s3_key)
+            except Exception:
+                head = {}
+
+            url = s3.generate_presigned_url(
+                "get_object",
+                Params={"Bucket": bucket, "Key": s3_key},
+                ExpiresIn=expires,
+            )
+
+            out.append({
+                "key": a_key,
+                "s3_uri": a_uri,
+                "filename": os.path.basename(s3_key),
+                "url": url,
+                "content_length": head.get("ContentLength"),
+                "content_type": head.get("ContentType"),
+                "expires_in": expires,
+            })
+
+        # If a single key was requested, return one object; otherwise a list
+        return Response(out[0] if key else out, status=200)
