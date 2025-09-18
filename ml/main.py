@@ -54,11 +54,10 @@ def write_training_report(job_id: int,
     resp = requests.patch(url, json=payload, headers=headers, timeout=10)
     resp.raise_for_status()
 
-    resp_artifacts = requests.patch(
-        f"{settings.api_base}/training_jobs/{job_id}/artifacts/",
-        json={"s3_uri": artifact_uris}
-    )
-    resp_artifacts.raise_for_status()
+    url = f"{settings.api_base}/training_jobs/{job_id}/artifacts/"
+    headers = {"X-Callback-Token": token, "Content-Type": "application/json"}
+    resp = requests.patch(url, json={"s3_uris": artifact_uris}, headers=headers, timeout=30)
+    resp.raise_for_status()
 
     # Update logger
     if resp.status_code == 200:
