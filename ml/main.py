@@ -56,7 +56,7 @@ def write_training_report(job_id: int,
 
     url = f"{settings.api_base}/training_jobs/{job_id}/artifacts/"
     headers = {"X-Callback-Token": token, "Content-Type": "application/json"}
-    resp = requests.patch(url, json={"s3_uris": artifact_uris}, headers=headers, timeout=30)
+    resp = requests.patch(url, json={"s3_uri": artifact_uris}, headers=headers, timeout=30)
     resp.raise_for_status()
 
     # Update logger
