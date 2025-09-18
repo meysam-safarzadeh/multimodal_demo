@@ -8,6 +8,7 @@ import botocore
 from config import settings
 import io
 import json
+from models.schemas import Artifacts
 
 
 logger = logging.getLogger("trainer")
@@ -121,7 +122,7 @@ def download_assets_from_s3(assets: List[Dict], workdir: Path, default_bucket: s
 
 def upload_artifacts_to_s3(
     bucket: str,
-    artifacts: Dict[str, object],
+    artifacts: Artifacts,
     job_id: int,
     prefix: str = "artifacts"
 ) -> List[Dict[str, str]]:
