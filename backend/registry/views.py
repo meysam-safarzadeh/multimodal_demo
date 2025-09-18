@@ -11,10 +11,10 @@ from rest_framework.decorators import action
 from registry.permissions import HasValidCallbackForWrite
 from metadata_detector import MetadataDetector
 from registry import settings
-from .models import Dataset, TrainingJob, Artifact, TrainingMetrics
+from .models import Dataset, TrainingJob, TrainingMetrics, TrainingArtifacts
 from .serializers import (
     DatasetSerializer, TrainingJobSerializer,
-    TrainingMetricsSerializer, ArtifactSerializer
+    TrainingMetricsSerializer, TrainingArtifactsSerializer
 )
 from services.training_services import start_training_background
 import pandas as pd
@@ -204,8 +204,17 @@ class TrainingJobViewSet(viewsets.ModelViewSet):
             job.status = new_status
             job.save(update_fields=["status"])
         return Response(ser.data, status=status.HTTP_200_OK)
+    
+    @action(detail=True, methods=["get", "patch"], url_path="artifacts")
+    def artifacts(self, request, pk=None):
+        job = self.get_object()
+        tm, _ = TrainingArtifacts.objects.get_or_create(job=job)
+        
+        if request.method.lower() == "get":
+            return Response(TrainingArtifactsSerializer(tm).data)
 
-
-class ArtifactViewSet(viewsets.ModelViewSet):
-    queryset = Artifact.objects.all()
-    serializer_class = ArtifactSerializer
+        # PATCH (token required by permission)
+        ser = TrainingArtifactsSerializer(job.artifacts, data=request.data, partial=True)
+        ser.is_valid(raise_exception=True)
+        ser.save()
+        return Response(ser.data, status=status.HTTP_200_OK)

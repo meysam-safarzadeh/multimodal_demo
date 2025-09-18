@@ -62,9 +62,16 @@ class TrainingMetrics(models.Model):
     def __str__(self):
         return f"Metrics(job={self.job.pk})"
 
-class Artifact(models.Model):
-    job = models.ForeignKey(TrainingJob, on_delete=models.CASCADE, related_name="artifacts")
-    kind = models.CharField(max_length=50)                 # "model", "log", "plot"
-    s3_uri = models.URLField()
-    sha256 = models.CharField(max_length=100, null=True, blank=True)
+class TrainingArtifacts(models.Model):
+    job = models.OneToOneField(
+        TrainingJob, on_delete=models.CASCADE, related_name="artifacts"
+    )
+    s3_uri = models.JSONField(default=list, blank=True)
     created_at = models.DateTimeField(auto_now_add=True)
+    
+    class Meta:
+        verbose_name = "Training Artifact"
+        verbose_name_plural = "Training Artifacts"
+
+    def __str__(self):
+        return f"Artifacts(job={self.job.pk})"

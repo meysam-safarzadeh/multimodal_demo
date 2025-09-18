@@ -1,5 +1,5 @@
 from rest_framework import serializers
-from .models import Dataset, TrainingJob, Artifact, TrainingMetrics
+from .models import Dataset, TrainingArtifacts, TrainingJob, TrainingMetrics
 from django.core.validators import URLValidator
 
 # Custom URL validator that accepts s3:// in addition to http/https
@@ -24,20 +24,15 @@ class TrainingMetricsSerializer(serializers.ModelSerializer):
         model = TrainingMetrics
         fields = ["accuracy", "loss", "val_accuracy", "val_loss", "logs", "created_at", "updated_at"]
 
+class TrainingArtifactsSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = TrainingArtifacts
+        fields = "__all__"
 
 class TrainingJobSerializer(serializers.ModelSerializer):
     metrics = TrainingMetricsSerializer(read_only=True)
+    artifacts = TrainingArtifactsSerializer(read_only=True)
 
     class Meta:
         model = TrainingJob
-        fields = "__all__"
-
-# class MetricSerializer(serializers.ModelSerializer):
-#     class Meta:
-#         model = Metric
-#         fields = "__all__"
-
-class ArtifactSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = Artifact
         fields = "__all__"
