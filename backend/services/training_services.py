@@ -6,7 +6,7 @@ from typing import Optional
 from django.utils import timezone
 from django.db import transaction
 from django.conf import settings
-from registry.models import Dataset, TrainingJob, Artifact
+from registry.models import Dataset, TrainingArtifacts, TrainingJob
 
 
 def start_training_background(job_id: int) -> None:
@@ -28,10 +28,7 @@ def _run_training(job_id: int) -> None:
 
         if exitcode != 0:
             raise RuntimeError(f"Training job in ECS failed with exit code {exitcode}")
-   
-        Artifact.objects.create(job_id=job_id, kind="model",
-                                s3_uri=f"s3://{settings.S3_BUCKET}/models/job-{job_id}.pt")
-     
+
         TrainingJob.objects.filter(id=job_id).update(
             status=TrainingJob.Status.COMPLETED, ended_at=timezone.now()
         )
