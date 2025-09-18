@@ -139,3 +139,84 @@ def render_training_curves(metrics: dict):
 
     if not acc_cols and not loss_cols:
         st.caption("Logs found, but no recognizable acc/loss keys to plot.")
+
+
+def _human_bytes(n: int | None) -> str:
+    if n is None:
+        return "—"
+    units = ["B", "KB", "MB", "GB", "TB"]
+    size = float(n)
+    for u in units:
+        if size < 1024.0 or u == units[-1]:
+            return f"{size:.2f} {u}"
+        size /= 1024.0
+    return f"{n} B"
+
+
+def render_artifacts_section(api_url: str, job_id: int, auth_header: dict | None = None):
+    """
+    Renders artifact downloads using the presigned response:
+    [
+      {
+        "key": "id2label",
+        "s3_uri": "s3://bucket/artifacts/<job_id>/id2label.json",
+        "filename": "id2label.json",
+        "url": "https://...presigned...",
+        "content_length": 50,
+        "content_type": "application/json",
+        "expires_in": 3600
+      },
+      ...
+    ]
+    """
+    st.subheader("📦 Artifacts")
+
+    try:
+        r = requests.get(
+            f"{api_url}/training_jobs/{job_id}/artifacts/presign/",
+            headers=auth_header or {},
+            timeout=30,
+        )
+        r.raise_for_status()
+        items = r.json()
+        if isinstance(items, dict):  # API may return a single object when ?key=...
+            items = [items]
+        if not items:
+            st.info("No artifacts yet. They’ll appear here after training finishes.")
+            return
+
+        # Header with quick refresh (any button click reruns Streamlit)
+        cols_top = st.columns([2, 2, 2, 2])
+        cols_top[0].markdown("**Key**")
+        cols_top[1].markdown("**Filename**")
+        cols_top[2].markdown("**Size**")
+        cols_top[3].button("🔄 Refresh links", use_container_width=True)
+
+        for art in items:
+            key = art.get("key", "artifact")
+            filename = art.get("filename") or key
+            url = art.get("url")
+            size = art.get("content_length")
+
+            c1, c2, c3, c4 = st.columns([2, 2, 2, 2])
+            with c1:
+                st.markdown(f"**{key}**")
+            with c2:
+                st.caption(f"📄 {filename}")
+            with c3:
+                st.metric("Size", _human_bytes(size))
+            with c4:
+                if url:
+                    st.link_button(f"⬇️ Download {filename}", url, use_container_width=True)
+                else:
+                    st.button("⬇️ Download", disabled=True, use_container_width=True)
+
+        # Footer note about expiry
+        # (use the first item's expires_in as a hint; presigned TTLs are per-call)
+        first_exp = items[0].get("expires_in")
+        if first_exp:
+            minutes = max(1, int(first_exp // 60))
+            st.caption(f"Links expire in ~{minutes} minute(s). Click **Refresh links** to regenerate.")
+
+    except Exception as e:
+        st.warning(f"No artifacts yet. They’ll appear here after training finishes.")

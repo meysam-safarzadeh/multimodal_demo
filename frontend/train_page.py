@@ -2,7 +2,7 @@ import time
 import requests
 import pandas as pd
 import streamlit as st
-from utils import render_training_curves
+from utils import render_artifacts_section, render_training_curves
 
 def start_training(api_url: str, job_id: int):
     r = requests.post(f"{api_url}/training_jobs/{job_id}/start/", timeout=30)
@@ -39,7 +39,7 @@ def render_train_results_page(api_url: str, on_back, on_home):
         st.warning("No training job found. Please create a job on Step 2.")
         st.button("⬅️ Back", on_click=on_back)
         return
-
+    
     # Show basic job info
     try:
         job = get_job(api_url, job_id)
@@ -47,7 +47,7 @@ def render_train_results_page(api_url: str, on_back, on_home):
         st.error(f"Could not load job: {e}")
 
     # Start Training button
-    colA, colB, colC = st.columns([1,1,2])
+    colA, colB = st.columns([2,2])
     with colA:
         if st.button("▶️ Start Training", width="stretch"):
             try:
@@ -89,6 +89,9 @@ def render_train_results_page(api_url: str, on_back, on_home):
     
     except Exception:
         st.caption("No metrics yet.")
+    
+    st.divider()
+    render_artifacts_section(api_url, job_id)
 
     # Nav
     c1, c2 = st.columns(2)
