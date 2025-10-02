@@ -222,7 +222,8 @@ if __name__ == "__main__":
     # Example usage
     params = DLTrainingParameters(
         model_name="mutlimodal_classification",
-        feature_columns=["Age", "Tryglicerides", "modality 1", "modality 2"],
+        feature_columns=["Age", "Tryglicerides"],
+        modality_columns=["modality 1", "modality 2"],
         column_types={'ID': 'other', 'N_Days': 'numeric', 'Status': 'categorical', 'Drug': 'categorical', 'Age': 'numeric', 'Sex': 'categorical', 'Ascites': 'categorical', 'Hepatomegaly': 'categorical', 'Spiders': 'categorical', 'Edema': 'categorical', 'Bilirubin': 'numeric', 'Cholesterol': 'numeric', 'Albumin': 'numeric', 'Copper': 'numeric', 'Alk_Phos': 'numeric', 'SGOT': 'numeric', 'Tryglicerides': 'numeric', 'Platelets': 'numeric', 'Prothrombin': 'numeric', 'Stage': 'numeric', 'm1': 'image_path', 'my text': 'text_path', 'm2': 'image_path', 'modality 1': 'image_path', 'modality 2': 'image_path'},
         target_column="Edema",
         validation_split=0.25,
