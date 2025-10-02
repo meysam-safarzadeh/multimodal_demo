@@ -72,7 +72,7 @@ def render_config_page(api_url: str, csv_blob: bytes, on_back, on_home):
     if st.session_state.get("csv_blob"):
         try:
             df_preview = pd.read_csv(io.BytesIO(st.session_state["csv_blob"]), nrows=50)
-            st.dataframe(df_preview, width="stretch")
+            st.dataframe(df_preview, use_container_width=True)
         except Exception as e:
             st.warning(f"Could not render local CSV preview: {e}")
 
@@ -91,7 +91,7 @@ def render_config_page(api_url: str, csv_blob: bytes, on_back, on_home):
                     if df_preview.empty:
                         st.info("No preview available yet.")
                     else:
-                        st.dataframe(df_preview, width="stretch")
+                        st.dataframe(df_preview, use_container_width=True)
             except Exception as e:
                 st.warning(f"Could not load preview from API: {e}")
 
