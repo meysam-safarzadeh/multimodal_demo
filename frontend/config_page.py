@@ -77,7 +77,7 @@ def render_config_page(api_url: str, csv_blob: bytes, on_back, on_home):
             st.warning(f"Could not render local CSV preview: {e}")
 
     # Case 2: existing dataset selected (no local CSV)
-    elif st.session_state.get("dataset_id"):
+    elif st.session_state.get("dataset_id") and not st.session_state.get("preview_loaded"):
         rid = st.session_state["dataset_id"]
         with st.spinner("Fetching preview..."):
             try:
@@ -91,9 +91,13 @@ def render_config_page(api_url: str, csv_blob: bytes, on_back, on_home):
                     if df_preview.empty:
                         st.info("No preview available yet.")
                     else:
+                        st.session_state.preview_data = df_preview
+                        st.session_state.preview_loaded = True
                         st.dataframe(df_preview, width="stretch")
             except Exception as e:
                 st.warning(f"Could not load preview from API: {e}")
+    elif st.session_state.get("preview_loaded") and st.session_state.get("preview_data") is not None:
+        st.dataframe(st.session_state.preview_data, width="stretch")
 
     # --- Metadata Summary ---
     st.subheader("🔍 Detected Metadata")
