@@ -129,13 +129,13 @@ def render_training_curves(metrics: dict):
     acc_cols = [c for c in [acc, val_acc] if c]
     if acc_cols:
         st.markdown("**Accuracy**")
-        st.line_chart(df_plot[acc_cols], use_container_width=True, color=["#FF5733", "#3498DB"])
+        st.line_chart(df_plot[acc_cols], width="stretch", color=["#FF5733", "#3498DB"])
 
     # Loss chart
     loss_cols = [c for c in [loss, val_loss] if c]
     if loss_cols:
         st.markdown("**Loss**")
-        st.line_chart(df_plot[loss_cols], use_container_width=True, color=["#FF5733", "#3498DB"])
+        st.line_chart(df_plot[loss_cols], width="stretch", color=["#FF5733", "#3498DB"])
 
     if not acc_cols and not loss_cols:
         st.caption("Logs found, but no recognizable acc/loss keys to plot.")
@@ -190,7 +190,7 @@ def render_artifacts_section(api_url: str, job_id: int, auth_header: dict | None
         cols_top[0].markdown("**Key**")
         cols_top[1].markdown("**Filename**")
         cols_top[2].markdown("**Size**")
-        cols_top[3].button("🔄 Refresh links", use_container_width=True)
+        cols_top[3].button("🔄 Refresh links", width="stretch")
 
         for art in items:
             key = art.get("key", "artifact")
@@ -207,9 +207,9 @@ def render_artifacts_section(api_url: str, job_id: int, auth_header: dict | None
                 st.metric("Size", _human_bytes(size))
             with c4:
                 if url:
-                    st.link_button(f"⬇️ Download {filename}", url, use_container_width=True)
+                    st.link_button(f"⬇️ Download {filename}", url, width="stretch")
                 else:
-                    st.button("⬇️ Download", disabled=True, use_container_width=True)
+                    st.button("⬇️ Download", disabled=True, width="stretch")
 
         # Footer note about expiry
         # (use the first item's expires_in as a hint; presigned TTLs are per-call)

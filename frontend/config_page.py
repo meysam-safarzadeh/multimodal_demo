@@ -72,7 +72,7 @@ def render_config_page(api_url: str, csv_blob: bytes, on_back, on_home):
     if st.session_state.get("csv_blob"):
         try:
             df_preview = pd.read_csv(io.BytesIO(st.session_state["csv_blob"]), nrows=50)
-            st.dataframe(df_preview, use_container_width=True)
+            st.dataframe(df_preview, width="stretch")
         except Exception as e:
             st.warning(f"Could not render local CSV preview: {e}")
 
@@ -91,7 +91,7 @@ def render_config_page(api_url: str, csv_blob: bytes, on_back, on_home):
                     if df_preview.empty:
                         st.info("No preview available yet.")
                     else:
-                        st.dataframe(df_preview, use_container_width=True)
+                        st.dataframe(df_preview, width="stretch")
             except Exception as e:
                 st.warning(f"Could not load preview from API: {e}")
 
@@ -203,7 +203,7 @@ def render_config_page(api_url: str, csv_blob: bytes, on_back, on_home):
     # Navigation buttons
     col1, col2 = st.columns(2)
     with col1:
-        st.button("⬅️ Back", on_click=on_back, use_container_width=True)
+        st.button("⬅️ Back", on_click=on_back, width="stretch")
 
     with col2:
         def _create_and_go():
@@ -221,6 +221,6 @@ def render_config_page(api_url: str, csv_blob: bytes, on_back, on_home):
         st.button(
             "➡️ Next (create job)",
             on_click=_create_and_go,
-            use_container_width=True,
+            width="stretch",
             disabled=not is_next_enabled
         )

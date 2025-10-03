@@ -49,7 +49,7 @@ def render_train_results_page(api_url: str, on_back, on_home):
     # Start Training button
     colA, colB = st.columns([2,2])
     with colA:
-        if st.button("▶️ Start Training", use_container_width=True):
+        if st.button("▶️ Start Training", width="stretch"):
             try:
                 start_training(api_url, job_id)
                 st.success("Training started.")
@@ -58,7 +58,7 @@ def render_train_results_page(api_url: str, on_back, on_home):
                 st.error(f"Failed to start training: {e}")
 
     with colB:
-        if st.button("🔄 Refresh status", use_container_width=True):
+        if st.button("🔄 Refresh status", width="stretch"):
             st.rerun()
 
     # Live polling (only after start)
@@ -96,6 +96,6 @@ def render_train_results_page(api_url: str, on_back, on_home):
     # Nav
     c1, c2 = st.columns(2)
     with c1:
-        st.button("⬅️ Back", on_click=on_back, use_container_width=True)
+        st.button("⬅️ Back", on_click=on_back, width="stretch")
     with c2:
-        st.button("🏠 Home", on_click=on_home, use_container_width=True)
+        st.button("🏠 Home", on_click=on_home, width="stretch")
